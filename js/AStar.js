@@ -36,38 +36,6 @@ class AStar {
         }
     }
 
-
-    //start function
-    start(startNode, endNode) {
-        this.running = true;
-        this.startNode = startNode;
-        this.startNode.setGCost(0);
-        this.endNode = endNode;
-
-        //avoiding the starting node to the closed list
-        addClosed(this.startNode); //add
-
-        this.startTime = Date.now();
-
-        findPath(this.startNode); //add
-
-        this.complete = true;
-        this.endTime = Date.now();
-        this.runTime = this.endTime - this.startTime;
-        console.log("Completed: " + this.runTime + "ms");
-    }
-
-    setup(startNode, endNode) {
-        this.running = true;
-        this.startNode = startNode;
-        this.startNode.setGCost(0);
-        this.parNode = this.startNode;
-        this.endNode = this.endNode;
-
-        //adding the starting node to the closed list
-        addClosed(this.startNode); //add
-    }
-
     setStart(startNode) {
         this.startNode = startNode;
         this.startNode.setGCost(0);
@@ -122,6 +90,253 @@ class AStar {
         this.diagonalMoveCost = Math.floor(Math.sqrt(2 * (Math.pow(size, 2))));
     }
 
+    checkBorderDuplicate(node) {
+        for (var i = 0; i < this.borders.size(); ++i) {
+            if (node.getX() == this.borders.get(i).getX() && node.getY() == this.borders.get(i).getY()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    checkOpenDuplicate(node) {
+        for (var i = 0; i < this.open.size(); ++i) {
+            if (node.getX() == this.open.get(i).getX() && node.getY() == this.open.get(i).getY()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    checkClosedDuplicate(node) {
+        for (var i = 0; i < this.closed.size(); ++i) {
+            if (node.getX() == this.closed.get(i).getX() && node.getY() == this.closed.get(i).getY()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    addBorder(node) {
+        if (this.borders.size() == 0) {
+            this.borders.add(node);
+        } else if (!checkBorderDuplicate(node)) {
+            this.borders.add(node);
+        }
+    }
+
+    addOpen(node) {
+        if (this.open.size() == 0) {
+            this.open.add(node);
+        } else if (!this.checkOpenDuplicate(node)) {
+            this.open.add(node);
+        }
+    }
+
+    addClosed(node) {
+        if (this.closed.size() == 0) {
+            this.closed.add(node);
+        } else if (!this.checkClosedDuplicate(node)) {
+            this.closed.add(node);
+        }
+    }
+
+    addPath(node) {
+        if (this.path.size() == 0) {
+            this.path.add(node);
+        } else {
+            this.path.add(node);
+        }
+    }
+
+    removePath(location) {
+        this.path.remove(location);
+    }
+
+    removeBorder(location) {
+        this.borders.remove(location);
+    }
+
+    removeOpen(arg1) {
+        //if arg1 is integer
+        if (Number.isInteger(arg1)) {
+            this.open.remove(arg1);
+
+            //if it is a Node
+        } else if (Node.prototype.isPrototypeOf(arg1)) {
+            for (var i = 0; i < this.open.size(); ++i) {
+                if (arg1.getX() == this.open.get(i).getX() && arg1.getY() == this.open.get(i).getY()) {
+                    //console.log("removing index " + i + " from open array...");
+                    this.open.remove(i);
+                }
+            }
+        }
+    }
+
+    removeClosed(location) {
+        this.closed.remove(location);
+    }
+
+    searchBorder(xSearch, ySearch) {
+        var Location = -1;
+
+        for (var i = 0; i < this.borders.size(); ++i) {
+            if (this.borders.get(i).getX() == xSearch && this.borders.get(i).getY() == ySearch) {
+                Location = i;
+                break;
+            }
+        }
+        return Location;
+    }
+
+    searchClosed(xSearch, ySearch) {
+        var Location = -1;
+
+        for (var i = 0; i < this.closed.size(); ++i) {
+            if (this.closed.get(i).getX() == xSearch && this.closed.get(i).getY() == ySearch) {
+                Location = i;
+                break;
+            }
+        }
+        return Location;
+    }
+
+    searchOpen(xSearch, ySearch) {
+        var Location = -1;
+
+        for (var i = 0; i < this.open.size(); ++i) {
+            if (this.open.get(i).getX() == xSearch && this.open.get(i).getY() == ySearch) {
+                Location = i;
+                break;
+            }
+        }
+        return Location;
+    }
+
+    reverse(list) {
+        var j = list.size() - 1;
+
+        for (var i = 0; i < j; ++i) {
+            var temp = list.get(i);
+            list.remove(i);
+            list.add(i, list.get(j - 1));
+            list.remove(j);
+            list.add(j, temp);
+            j--;
+        }
+    }
+
+    lowestFCost() {
+        if (this.open.size() > 0) {
+            bubbleSort(this.open, "NodeList");
+            return this.open.get(0);
+        }
+        return null;
+    }
+
+    getBorderList() {
+        return this.borders;
+    }
+
+    getOpenList() {
+        return this.open;
+    }
+
+    getOpen(location) {
+        return this.open.get(location);
+    }
+
+    getClosedList() {
+        return this.closed;
+    }
+
+    getPathList() {
+        return this.path;
+    }
+
+    getRunTime() {
+        return this.runTime;
+    }
+
+    reset() {
+        while (this.open.size() > 0) {
+            this.open.remove(0);
+        }
+
+        while (this.closed.size() > 0) {
+            this.closed.remove(0);
+        }
+
+        while (this.path.size() > 0) {
+            this.path.remove(0);
+        }
+
+        this.noPath = false;
+        this.running = false;
+        this.complete = false;
+    }
+
+    getOpenNode(x, y) {
+        for (var i = 0; i < this.open.size(); ++i) {
+            if (this.open.get(i).getX() == x && this.open.get(i).getY() == y) {
+                return this.open.get(i);
+            }
+        }
+        return null;
+    }
+
+    printBorderList() {
+        console.log("Border list:");
+        for (var i = 0; i < this.borders.size(); ++i) {
+            console.log(this.borders.get(i).getX() + ", " + this.borders.get(i).getY());
+        }
+    }
+
+    printOpenList() {
+        console.log("Open list:");
+        for (var i = 0; i < this.open.size(); ++i) {
+            console.log(this.open.get(i).getX() + ", " + this.open.get(i).getY());
+        }
+    }
+
+    printPathList() {
+        console.log("Path list:");
+        for (var i = 0; i < this.path.size(); ++i) {
+            console.log(this.path.get(i).getX() + ", " + this.path.get(i).getY());
+        }
+    }
+
+    //start function
+    start(startNode, endNode) {
+        this.running = true;
+        this.startNode = startNode;
+        this.startNode.setGCost(0);
+        this.endNode = endNode;
+
+        //avoiding the starting node to the closed list
+        this.addClosed(this.startNode); //add
+
+        this.startTime = Date.now();
+
+        this.findPath(this.startNode); //add
+
+        this.complete = true;
+        this.endTime = Date.now();
+        this.runTime = this.endTime - this.startTime;
+        console.log("Completed: " + this.runTime + "ms");
+    }
+
+    setup(startNode, endNode) {
+        this.running = true;
+        this.startNode = startNode;
+        this.startNode.setGCost(0);
+        this.parNode = this.startNode;
+        this.endNode = this.endNode;
+
+        //adding the starting node to the closed list
+        this.addClosed(this.startNode); //add
+    }
+
     findPath(parent) {
         var openNode = null;
 
@@ -135,7 +350,7 @@ class AStar {
                     }
 
                     var possibleX = (parent.getX() - this.size) + (this.size * i);
-                    var possibleY = (preant.getY() - this.size) + (this.size * j);
+                    var possibleY = (parent.getY() - this.size) + (this.size * j);
 
                     //possible coordinates of borders
                     //using (crossBorderX, parent.getY())
@@ -246,7 +461,11 @@ class AStar {
             }
         }
 
-        this.findPath(parent);
+        if(this.showSteps){
+            this.findPath(parent);
+        } else {
+            this.parNode = parent;
+        }
 
         //TODO
         //else par = parent where original if is:
@@ -257,14 +476,14 @@ class AStar {
     calculateNodeValues(possibleX, possibleY, openNode, parent) {
         //if the coordinates are outside of the bordrs
         //TODO get width and height of grid area
-        if(possibleX < 0 | possibleY < 0 | possibleX >= GRID_AREA_WIDTH | possibleY >= GRID_AREA_HEIGHT){
-            return;
-        }
+        // if(possibleX < 0 | possibleY < 0 | possibleX >= GRID_AREA_WIDTH | possibleY >= GRID_AREA_HEIGHT){
+        //     return;
+        // }
 
         //if the node is already a border node or a closed node or an
         //already open node, then don't make open node
         if(this.searchBorder(possibleX, possibleY) != -1 | this.searchClosed(possibleX, possibleY) != -1
-        | this.searchOpen(possiblex, possibleY) != -1){
+        | this.searchOpen(possibleX, possibleY) != -1){
             return;
         }
 
@@ -280,9 +499,9 @@ class AStar {
         var GyMoveCost = openNode.getY() - parent.getY();
         
         //might run into issues since there is a this.gCost ?
-        var gCost = parent.getG();
+        var gCost = parent.getGCost();
 
-        if(GxMoveCost != 0 && GyMovecost !=  0){
+        if(GxMoveCost != 0 && GyMoveCost !=  0){
             gCost += this.diagonalMoveCost;
         } else {
             gCost += this.size;
@@ -318,221 +537,6 @@ class AStar {
                     }
                 }
             }
-        }
-    }
-
-    addBorder(node) {
-        if (this.borders.size() == 0) {
-            this.borders.add(node);
-        } else if (!checkBorderDuplicate(node)) {
-            this.borders.add(node);
-        }
-    }
-
-    addOpen(node) {
-        if (this.open.size() == 0) {
-            this.open.add(node);
-        } else if (!checkOpenDuplicate(node)) {
-            this.open.add(node);
-        }
-    }
-
-    addClosed(node) {
-        if (this.closed.size() == 0) {
-            this.closed.add(node);
-        } else if (!checkClosedDuplicate(node)) {
-            this.closed.add(node);
-        }
-    }
-
-    addPath(node) {
-        if (this.path.size() == 0) {
-            this.path.add(node);
-        } else {
-            this.path.add(node);
-        }
-    }
-
-    removePath(location) {
-        this.path.remove(location);
-    }
-
-    removeBorder(location) {
-        this.borders.remove(location);
-    }
-
-    removeOpen(arg1) {
-        //if arg1 is integer
-        if (Number.isInteger(arg1)) {
-            this.open.remove(arg1);
-
-            //if it is a Node
-        } else if (Node.prototype.isPrototypeOf(arg1)) {
-            for (var i = 0; i < this.open.size(); ++i) {
-                if (arg1.getX() == this.open.get(i).getX() && arg1.getY() == this.open.get(i).getY()) {
-                    this.open.remove(i);
-                }
-            }
-        }
-    }
-
-    removeClosed(location) {
-        this.closed.remove(location);
-    }
-
-    checkBorderDuplicate(node) {
-        for (var i = 0; i < this.borders.size(); ++i) {
-            if (node.getX() == this.borders.get(i).getX() && node.getY() == this.borders.get(i).getY()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    checkOpenDuplicate(node) {
-        for (var i = 0; i < this.open.size(); ++i) {
-            if (node.getX() == this.open.get(i).getX() && node.getY() == this.open.get(i).getY()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    checkClosedDuplicate(node) {
-        for (var i = 0; i < this.closed.size(); ++i) {
-            if (node.getX() == this.closed.get(i).getX() && node.getY() == this.closed.get(i).getY()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    searchBorder(xSearch, ySearch) {
-        var Location = -1;
-
-        for (var i = 0; i < this.borders.size(); ++i) {
-            if (this.borders.get(i).getX() == xSearch && this.borders.get(i).getY() == ySearch) {
-                Location = i;
-                break;
-            }
-        }
-        return Location;
-    }
-
-    searchClosed(xSearch, ySearch) {
-        var Location = -1;
-
-        for (var i = 0; i < this.closed.size(); ++i) {
-            if (this.closed.get(i).getX() == xSearch && this.closed.get(i).getY() == ySearch) {
-                Location = i;
-                break;
-            }
-        }
-        return Location;
-    }
-
-    searchOpen(xSearch, ySearch) {
-        var Location = -1;
-
-        for (var i = 0; i < this.open.size(); ++i) {
-            if (this.open.get(i).getX() == xSearch && this.open.get(i).getY() == ySearch) {
-                Location = i;
-                break;
-            }
-        }
-        return Location;
-    }
-
-    reverse(list) {
-        var j = list.size() - 1;
-
-        for (var i = 0; i < j; ++i) {
-            var temp = list.get(i);
-            list.remove(i);
-            list.add(i, list.get(j - 1));
-            list.remove(j);
-            list.add(j, temp);
-            j--;
-        }
-    }
-
-    lowestFCost() {
-        if (this.open.size() > 0) {
-            bubbleSort(this.open);
-            return this.open.get(0);
-        }
-        return null;
-    }
-
-    getBorderList() {
-        return this.borders;
-    }
-
-    getOpenList() {
-        return this.open;
-    }
-
-    getOpen(location) {
-        return this.open.get(location);
-    }
-
-    getClosedList() {
-        return this.closed;
-    }
-
-    getPathList() {
-        return this.path;
-    }
-
-    getRunTime() {
-        return this.runTime;
-    }
-
-    reset() {
-        while (this.open.size() > 0) {
-            this.open.remove(0);
-        }
-
-        while (this.closed.size() > 0) {
-            this.closed.remove(0);
-        }
-
-        while (this.path.size() > 0) {
-            this.path.remove(0);
-        }
-
-        this.noPath = false;
-        this.running = false;
-        this.complete = false;
-    }
-
-    getOpenNode(x, y) {
-        for (var i = 0; i < this.open.size(); ++i) {
-            if (this.open.get(i).getX() == x && this.open.get(i).getY() == y) {
-                return this.open.get(i);
-            }
-        }
-        return null;
-    }
-
-    printBorderList() {
-        console.log("Border list:");
-        for (var i = 0; i < this.borders.size(); ++i) {
-            console.log(this.borders.get(i).getX() + ", " + this.borders.get(i).getY());
-        }
-    }
-
-    printOpenList() {
-        console.log("Open list:");
-        for (var i = 0; i < this.open.size(); ++i) {
-            console.log(this.open.get(i).getX() + ", " + this.open.get(i).getY());
-        }
-    }
-
-    printPathList() {
-        console.log("Path list:");
-        for (var i = 0; i < this.path.size(); ++i) {
-            console.log(this.path.get(i).getX() + ", " + this.path.get(i).getY());
         }
     }
 }

@@ -2,7 +2,7 @@ node = new Node(3, 3);
 node2 = new Node(3, 3);
 
 var equal = NodeisEqual(node, node2);
-document.getElementById("TestDiv").innerHTML = equal;
+//document.getElementById("TestDiv").innerHTML = equal;
 
 testingOpts = function(x, opts){
     if(opts.Property){
@@ -31,6 +31,21 @@ console.log("List length: " + testList.size());
 testList.remove(2);
 testList.print();
 
+var testList2 = new ArrayList();
+for(var i = 0; i < 20; ++i){
+    testList2.add(i);
+}
+console.log("Test list 2: ");
+testList2.print();
+
+for(var i = 0; i < 20; ++i){
+    testList2.remove(0);
+}
+
+console.log("Test list 2 after remove: ");
+testList2.print();
+
+
 //testing quicksort
 var items = [5,3,7,6,2,9];
 var sortedArray = quickSort(items, 0, items.length - 1);
@@ -41,3 +56,13 @@ console.log(Date.now());
 
 //testing comparisons
 console.log("class comparison: " + (Node.prototype.isPrototypeOf(node)));
+
+
+
+//testing AStar (here we go...)
+var size = 25;
+var startNode = new Node(0, 0);
+var endNode = new Node(0, 5);
+var pathfinding = new AStar(size, startNode, endNode);
+pathfinding.setDiagonal(true);
+pathfinding.start(startNode, endNode);

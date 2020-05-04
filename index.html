@@ -5,19 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
+<body onload="drawCanvas()">
     Hello
 
-    <div id="TestDiv">
-
+    <div id=container>
+        <canvas id='canvas' width='500' height='500' onclick="showCoords(event)"></canvas>
     </div>
+
+    <p id='showCoords'></p>
 
     <!-- Scripts -->
     <script src="js/ArrayList.js"></script>
     <script src="js/Node.js"></script>
     <script src="js/Sort.js"></script>
-    <script src="js/Testing.js"></script>
     <script src="js/AStar.js"></script>
+    <script src="js/Visuals.js"></script>
+    <script src="js/Testing.js"></script>
 
 </body>
 </html>

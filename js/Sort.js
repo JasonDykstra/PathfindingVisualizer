@@ -7,9 +7,9 @@
 //bubble sort for data of types int[] and ArrayList<Node>
 //No overloading in js, so instead pass in an options variable
 //and check what properties it has within the function
-function bubbleSort(data, opts) {
+function bubbleSort(data, type) {
     //if the options variable passed in is {IntArray: True}
-    if (opts.IntArray) {
+    if (type == "IntArray") {
         var Switch = -1;
         var temp;
 
@@ -40,9 +40,9 @@ function bubbleSort(data, opts) {
             }
         }
         //if the options variable passed in is {NodeList: true}
-    } else if (opts.NodeList) {
+    } else if (type == "NodeList") {
         var Switch = -1;
-        tempNode;
+        var tempNode;
 
         while (Switch != 0) {
             Switch = 0;
