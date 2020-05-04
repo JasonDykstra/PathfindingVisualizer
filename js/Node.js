@@ -54,10 +54,12 @@ class Node{
         this.parent = parent;
     }
 
-    isEqual(start, end){
-        if(start.getX() == end.getX() && start.getY() == end.getY()){
-            return true;
-        }
-        return false;
+    
+}
+
+function NodeisEqual(start, end){
+    if(start.getX() == end.getX() && start.getY() == end.getY()){
+        return true;
     }
+    return false;
 }

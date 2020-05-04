@@ -15,7 +15,6 @@ class ArrayList{
             //first value passed into function as value to be added
             this.list.push(index);
         }
-        
     }
 
     remove(index){
@@ -32,7 +31,6 @@ class ArrayList{
             output += this.list[i] + " ";
         }
         console.log(output);
-
     }
 
 

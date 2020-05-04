@@ -1,7 +1,7 @@
 node = new Node(3, 3);
 node2 = new Node(3, 3);
 
-var equal = node.isEqual(node, node2);
+var equal = NodeisEqual(node, node2);
 document.getElementById("TestDiv").innerHTML = equal;
 
 testingOpts = function(x, opts){
@@ -30,3 +30,14 @@ console.log("List length: " + testList.size());
 //testing removing elements from an array
 testList.remove(2);
 testList.print();
+
+//testing quicksort
+var items = [5,3,7,6,2,9];
+var sortedArray = quickSort(items, 0, items.length - 1);
+console.log(sortedArray); //prints [2,3,5,6,7,9]
+
+
+console.log(Date.now());
+
+//testing comparisons
+console.log("class comparison: " + (Node.prototype.isPrototypeOf(node)));
