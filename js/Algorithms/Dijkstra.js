@@ -14,7 +14,7 @@ function dijkstra(grid, startNode, endNode) {
         //if we get to a wall, skip it
         if (closestNode.isWall()) continue;
         //if closest node is at distance of infinity,
-        //it means we are trapped and have to stop     //this is where we're stopping
+        //it means we are trapped and have to stop
         if (closestNode.distance === Infinity) {
             return visitedNodesInOrder;
         }
@@ -44,8 +44,8 @@ function updateUnvisitedNeighbors(node, grid) {
 
 function getUnvisitedNeighbors(node, grid) {
     const neighbors = [];
-    const col = node.getY();
-    const row = node.getX();
+    const col = node.getCol();
+    const row = node.getRow();
 
     //north
     if (row > 0) {
@@ -79,15 +79,10 @@ function getAllNodes(grid) {
 //backtracks from the end node to find the shortest path
 //only work when called after the dijkstra method above
 function getNodesInShortestPathOrder(endNode) {
-    console.log("Getting nodes in shortest path...");
-    console.log("Type of end node passed into shortestPathOrder function is: " + typeof(endNode));
-    console.log("Type of previous node: " + typeof(endNode.getPreviousNode()));
-    console.log("Coordinates of previous node: " + endNode.getPreviousNode().getX() + ", " + endNode.getPreviousNode().getY());
     const nodesInShortestPathOrder = [];
+    //need to include endNode as a shortestPath node in the case that it is adjacent to the start node
     let currentNode = endNode;
-    //while (typeof(currentNode) !== "undefined") {
     while(currentNode !== START_NODE){
-        console.log("Adding node " + currentNode.getX() + ", " + currentNode.getY() + " to list");
         nodesInShortestPathOrder.unshift(currentNode);
         currentNode = currentNode.getPreviousNode();
     }

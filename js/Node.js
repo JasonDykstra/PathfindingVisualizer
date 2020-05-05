@@ -1,8 +1,8 @@
 class Node{
 
-    constructor(x, y){
-        this.x = x;
-        this.y = y;
+    constructor(row, col){
+        this.row = row;
+        this.col = col;
         this.gCost = 0;
         this.hCost = 0;
         this.fCost = 0;
@@ -16,12 +16,12 @@ class Node{
         this.shortestPath = false;
     }
 
-    getX(){
-        return this.x;
+    getRow(){
+        return this.row;
     }
 
-    getY(){
-        return this.y;
+    getCol(){
+        return this.col;
     }
 
     getGCost(){
@@ -68,9 +68,9 @@ class Node{
         return this.distance;
     }
 
-    setXY(x, y){
-        this.x = x;
-        this.y = y;
+    setRowCol(row, col){
+        this.row = row;
+        this.col = col;
     }
 
     setGCost(gCost){
@@ -119,7 +119,7 @@ class Node{
 }
 
 function NodeisEqual(start, end){
-    if(start.getX() == end.getX() && start.getY() == end.getY()){
+    if(start.getrow() == end.getrow() && start.getcol() == end.getcol()){
         return true;
     }
     return false;

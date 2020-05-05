@@ -18,3 +18,9 @@ Problems/Solutions
 - Dijkstra's algorithm wouldn't work after clearing the grid
     - Problem: the code I went off of from https://github.com/clementmihailescu/Pathfinding-Visualizer-Tutorial/blob/master/src/algorithms/dijkstra.js had "currentNode !== null" as the condition for the while loop in the "getNodesInShortestPathOrder" function, which caused my program to jump back and forth between two nodes indefinitely for some reason
     - Solution: I changed that line to be "currentNode !== START_NODE" so that when the path reached the start node, it would terminate.
+- Drawing the start node while hovering was too slow
+    - Problem: I tried drawing the start node under your cursor before you placed it so it would appear you were dragging and dropping it, but re-drawing the entire canvas was too expensive and made the program run very slow
+    - Solution: Instead of re-drawing the entire canvas each time, I only updated it when the cursor changed cells, and I made the new cell green and the old cell white. Huge increase in performance.
+- Weird coordinate errors on grid
+    - Problem: Some elements were had mirrored coordinates on the grid, or had different coordinates in calculation than graphically
+    - Solution: I ran into problems trying to convert between (x, y) and (row, col) constantly since they are flipped, so I converted everything to use (row, col).

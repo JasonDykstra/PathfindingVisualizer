@@ -1,56 +1,56 @@
-const animationDelay = 20;
 
-
+//animates the path from start to end node
 function animateShortestPath(nodesInShortestPathOrder){
     for(let i = 0; i < nodesInShortestPathOrder.length; ++i){
         setTimeout(() => {
             const node = nodesInShortestPathOrder[i];
-            GRID[node.getX()][node.getY()].setShortestPath(true);
+            GRID[node.getRow()][node.getCol()].setShortestPath(true);
             drawGrid();
-        }, animationDelay * 3 * i);
+        }, ANIMATION_DELAY * 3 * i);
     }
 }
 
+//main animation method that animates the visited nodes, or the process of the pathfinding algorithm
 function animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder){
     console.log("Calling animate Dijkstra...");
     for(let i = 0; i <= visitedNodesInOrder.length; ++i){
         if(i === visitedNodesInOrder.length - 1){
             setTimeout(() => {
                 animateShortestPath(nodesInShortestPathOrder);
-            }, animationDelay * i);
+            }, ANIMATION_DELAY * i);
             return;
         }
         setTimeout(() => {
             const node = visitedNodesInOrder[i];
-            GRID[node.getX()][node.getY()].setVisited(true);
+            GRID[node.getRow()][node.getCol()].setVisited(true);
             drawGrid();
-        }, animationDelay * i);
+        }, ANIMATION_DELAY * i);
     }
 }
 
-
+//function that calls the main animate function
+//resets nodes set as visited by pathfinding algorithm to unvisited, so the 
+//animation can work properly by setting nodes to visited over a time interval
 function visualizeDijkstra(){
     const visitedNodesInOrder = dijkstra(GRID, START_NODE, END_NODE);
-    console.log("Visited nodes list is: " + visitedNodesInOrder);
 
     //have to set visited to false for all visited nodes in order so that we can animate them
     resetVisitedNodesInOrder(visitedNodesInOrder);
 
     //stalling here for some reason if i try to run the algorithm more than once
     const nodesInShortestPathOrder = getNodesInShortestPathOrder(END_NODE);
-    console.log("Shortest Path Nodes list is: " + nodesInShortestPathOrder);
 
     animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
 }
 
-
+//event listener for "find path" button
 document.getElementById("findPath").addEventListener("click", function (event) {
     console.log("finding path...");
     visualizeDijkstra();
 });
 
+//helper function to reset the visited status of all nodes
 function resetVisitedNodesInOrder(visitedNodesInOrder){
-    console.log("Resetting visited nodes in order!");
     for(let i = 0; i < visitedNodesInOrder.length; ++i){
         visitedNodesInOrder[i].setVisited(false);
     }

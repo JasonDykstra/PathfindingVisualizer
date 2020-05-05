@@ -83,9 +83,9 @@
 
 
 //testing timeout stuff
-function myTestFunctionLog(){
-    window.alert("hello!");
-}
+// function myTestFunctionLog(){
+//     window.alert("hello!");
+// }
 
 // document.getElementById("timeout").addEventListener("click", function (event) {
 //     setTimeout(myTestFunctionLog, 2000);
@@ -95,15 +95,15 @@ function myTestFunctionLog(){
 //or else it will execute immediately!
 
 //testing timeout passing in variables
-var testMessage = "hello world!";
+// var testMessage = "hello world!";
 
-function testLogOutput(x){
-    console.log("Your test message is: " + x);
-}
+// function testLogOutput(x){
+//     console.log("Your test message is: " + x);
+// }
 
-setTimeout(function(){
-    testLogOutput(testMessage);
-}, 2000);
+// setTimeout(function(){
+//     testLogOutput(testMessage);
+// }, 2000);
 
 //worked!
 

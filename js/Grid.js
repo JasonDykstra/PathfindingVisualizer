@@ -1,51 +1,54 @@
-var GRID;
-var START_NODE;
-var END_NODE;
-
-var canvas, buffer, context, drawGrid, developerMode;
-
 (function () {
-    var size, createStartNode, createEndNode, eraser, nodeColors;
+    //local variables for drawing
+    var size, createStartNode, createEndNode, eraser, nodeColors, lastCellHovered;
 
+    //define canvas elements
     buffer = document.createElement("canvas").getContext("2d");
     context = document.querySelector("canvas").getContext("2d");
     canvas = document.querySelector("canvas");
 
+    //define other elements
     GRID = [];
-
     eraser = false;
-
     nodeColors = [];
-    nodeColors["empty"] = "#ffffff";
-    nodeColors["start"] = "#00ff00";
-    nodeColors["end"] = "#ff0000";
-    nodeColors["wall"] = "#000000";
-    nodeColors["visited"] = "#0000ff";
-    nodeColors["shortestPath"] = "#00ffff";
-
     createStartNode = false;
     createEndNode = false;
     developerMode = false;
 
-    //change these to alter the size of the grid
-    const ROWS = 10;
-    const COLS = 20;
-
-    //initialize the grid of empty nodes
-    for (let i = 0; i < COLS; ++i) {
-        var row = [];
-        for (let j = 0; j < ROWS; ++j) {
-            var tempNode = new Node(i, j);
-            row.push(tempNode);
+    //initialize stuff
+    initialize = function () {
+        //initialize the grid of empty nodes
+        for (let i = 0; i < ROWS; ++i) {
+            var row = [];
+            for (let j = 0; j < COLS; ++j) {
+                var tempNode = new Node(i, j);
+                row.push(tempNode);
+            }
+            GRID.push(row);
         }
-        GRID.push(row);
+
+        size = 32;
+
+        buffer.canvas.width = COLS * size;
+        buffer.canvas.height = ROWS * size;
+        buffer.strokeStyle = "#bbbbbb";
+
+        nodeColors["empty"] = "#ffffff";
+        nodeColors["start"] = "#00ff00";
+        nodeColors["end"] = "#ff0000";
+        nodeColors["wall"] = "#000000";
+        nodeColors["visited"] = "#0000ff";
+        nodeColors["shortestPath"] = "#00ffff";
+
+        lastCellHovered = [0, 0];
     }
 
-    size = 32;
+    initialize();
 
-    buffer.canvas.width = COLS * size;
-    buffer.canvas.height = ROWS * size;
+    
+    //functions
 
+    //returns absolute position of cursor
     function getCursorPos() {
         var pos = [];
         const rect = canvas.getBoundingClientRect();
@@ -56,6 +59,7 @@ var canvas, buffer, context, drawGrid, developerMode;
         return pos;
     }
 
+    //returns a boolean of whether or not the cursor is in the canvas
     function cursorInCanvas() {
         var pos = getCursorPos();
         if (
@@ -68,24 +72,89 @@ var canvas, buffer, context, drawGrid, developerMode;
         return true;
     }
 
-    drawGrid = function () {
-        for (let i = 0; i < GRID.length; ++i) {
-            for (let j = 0; j < GRID[0].length; ++j) {
-                
-                //set the draw variables
-                let node = GRID[i][j];
-                var fillStyle = nodeColors["empty"];
-                if (node.isWall()) fillStyle = nodeColors["wall"];
-                if (node.isVisited()) fillStyle = nodeColors["visited"];
-                if (node.isShortestPath()) fillStyle = nodeColors["shortestPath"];
-                if (node.isStart()) fillStyle = nodeColors["start"];
-                if (node.isEnd()) fillStyle = nodeColors["end"];
+    //even though I check to see if the cursor is in the canvas, there is still a frame where
+    //it returns a cell outside of the canvas, so have to account for that using this function
+    function posInCanvas(gridPos){
+        if(
+            gridPos[0] < 0 ||
+            gridPos[0] >= GRID.length ||
+            gridPos[1] < 0 ||
+            gridPos[1] >= GRID[0].length
+        )
+            return false;
+        return true;
+    }
 
-                //draw the nodes
-                buffer.fillStyle = fillStyle;
-                buffer.fillRect(i * size, j * size, size, size);
-                buffer.strokeStyle = "#bbbbbb";
-                buffer.strokeRect(i * size, j * size, size, size);
+    function updateLastCellHovered() {
+        var pos = getCursorPos();
+        var gridPos = getGridPos(pos[0], pos[1]);
+        if (posInCanvas(gridPos)) {
+
+            //if cursor moves to a different grid space
+            if (gridPos[0] != lastCellHovered[0] | gridPos[1] != lastCellHovered[1]) {
+                drawHoverCells(gridPos);
+            }
+        }
+    }
+
+    function drawHoverCells(gridPos) {
+        var fillStyle = "";
+        var row = gridPos[0];
+        var col = gridPos[1];
+        var node = GRID[lastCellHovered[0]][lastCellHovered[1]];
+
+        //make the previously hovered square whatever color it was before
+        fillStyle = nodeColors[getNodeType(node)];
+        drawCell(fillStyle, lastCellHovered[0], lastCellHovered[1]);
+
+        //if you're creating a start node
+        if (createStartNode) fillStyle = nodeColors["start"];
+        if (createEndNode) fillStyle = nodeColors["end"];
+
+        //fill in the new cell with the appropriate color
+        drawCell(fillStyle, row, col);
+
+        //draw canvas
+        drawCanvas();
+
+        //update lastCellHovered
+        lastCellHovered = gridPos;
+    }
+
+    //returns a string of the type of a node
+    function getNodeType(node) {
+        if (node.isStart()) return "start";
+        if (node.isEnd()) return "end";
+        if (node.isShortestPath()) return "shortestPath";
+        if (node.isWall()) return "wall";
+        if (node.isVisited()) return "visited";
+        return "empty";
+    }
+
+    //function to make code a little more easily readable
+    function drawCanvas() {
+        context.drawImage(buffer.canvas, 0, 0, buffer.canvas.width, buffer.canvas.height, 0, 0, context.canvas.width, context.canvas.height);
+    }
+
+    //helper function for drawing individual cells
+    function drawCell(fillStyle, row, col) {
+        buffer.fillStyle = fillStyle;
+        buffer.fillRect(col * size, row * size, size, size);
+        buffer.strokeRect(col * size, row * size, size, size);
+    }
+
+    //main draw function for canvas
+    //currently has to be a variable and not a function for it to have global scope
+    drawGrid = function() {
+        for (let row = 0; row < GRID.length; ++row) {
+            for (let col = 0; col < GRID[0].length; ++col) {
+
+                //set the draw variables
+                let node = GRID[row][col];
+                var fillStyle = nodeColors[getNodeType(node)];
+
+                //draw the node
+                drawCell(fillStyle, row, col);
 
                 //draw additional features if in developer mode
                 if (developerMode) {
@@ -93,40 +162,142 @@ var canvas, buffer, context, drawGrid, developerMode;
                     buffer.fillStyle = "#ffffff";
                     buffer.font = "10px Arial";
 
+                    //center the text vertically and horizontally
+                    buffer.textAlign = "center";
+                    buffer.textBaseLine = "middle";
+
                     var width = canvas.width;
                     var height = canvas.height;
                     buffer.fillText(
                         node.getDistance(),
-                        node.getX() * 32 + 10,
-                        node.getY() * 32 + 20
+                        node.getCol() * size + size/2,
+                        node.getRow() * size + size/2
                     );
                     //TODO change the values above to center the text instead of hardcoding it
                 }
             }
         }
 
-        //while creating the start node, make every node you hover over green
-        if (createStartNode) {
-            console.log("Hovering green!");
-            var pos = getCursorPos;
-            var gridPos = getGridPos(pos[0], pos[1]);
-            buffer.fillStyle = nodeColors["start"];
-            buffer.fillRect(gridPos[0] * size, gridPos[1] * size, size, size);
-        }
-
-        context.drawImage(
-            buffer.canvas,
-            0,
-            0,
-            buffer.canvas.width,
-            buffer.canvas.height,
-            0,
-            0,
-            context.canvas.width,
-            context.canvas.height
-        );
+        drawCanvas();
     };
 
+    //just keeps the canvas element sized appropriately
+    function resize(event){
+        context.canvas.width = Math.floor(
+            document.documentElement.clientWidth - size
+        );
+
+        if (context.canvas.width > document.documentElement.clientHeight) {
+            context.canvas.width = Math.floor(
+                document.documentElement.clientHeight
+            );
+        }
+
+        context.canvas.height = Math.floor(
+            context.canvas.width * (ROWS / COLS)
+        );
+
+        drawGrid();
+    }
+
+    //call resize on startup to draw the canvas initially
+    resize();
+
+    //IMPORTANT does not return (x, y) coordinates of a node, but rather (row, col), so flipped
+    //this is due to the way the 2d array works, and that the first parameter is row and second is col
+    function getGridPos(x, y) {
+        var width = canvas.width;
+        var height = canvas.height;
+        var coordinate = [];
+        coordinate.push(Math.floor(y / (height / ROWS)));
+        coordinate.push(Math.floor(x / (width / COLS)));
+        return coordinate;
+    }
+
+    function placeNode() {
+        var pos = getCursorPos();
+        var gridPos = getGridPos(pos[0], pos[1]);
+        var row = gridPos[0];
+        var col = gridPos[1];
+
+        //clear the last start node and place new start node
+        if (createStartNode) {
+            clearGrid("start");
+            GRID[row][col].setStart(true);
+            GRID[row][col].setWall(false);
+            START_NODE = GRID[row][col];
+        }
+
+        //place end
+        if (createEndNode) {
+            clearGrid("end");
+            GRID[row][col].setEnd(true);
+            GRID[row][col].setWall(false);
+            END_NODE = GRID[row][col];
+        }
+
+        //place wall
+
+        //don't allow user to make walls to overwrite the start and end nodes
+        if (
+            GRID[row][col].isStart() == false &&
+            GRID[row][col].isEnd() == false
+        )
+            GRID[row][col].setWall(eraser ? false : true);
+
+        drawGrid();
+    }
+
+    
+
+    //event listeners
+
+    window.addEventListener("resize", resize, { passive: true });
+
+    window.addEventListener("mousedown", function (event) {
+        if (cursorInCanvas()) {
+            //draw when you click
+            placeNode();
+            //also draw when you drag while mouse is pressed
+            document.addEventListener("mousemove", placeNode);
+
+            if (createStartNode) {
+                stopPlaceStartNode();
+            }
+
+            if (createEndNode) {
+                stopPlaceEndNode();
+            }
+        }
+    });
+
+    window.addEventListener("mouseup", function (event) {
+        //when not pressing down mouse button anymore, stop drawing
+        document.removeEventListener("mousemove", placeNode);
+    });
+
+    document.getElementById("placeStartNode").addEventListener("click", function (event) {
+        placeStartNode();
+    });
+
+    document.getElementById("placeEndNode").addEventListener("click", function (event) {
+        placeEndNode();
+    });
+
+    document.getElementById("clearGrid").addEventListener("click", function (event) {
+        clearGrid();
+    });
+
+    document.getElementById("toggleEraser").addEventListener("click", function (event) {
+        toggleEraser();
+    });
+
+    document.getElementById("toggleDeveloperMode").addEventListener("click", function (event) {
+        toggleDeveloperMode();
+    });
+
+    //event listener functions
+    
     function clearGrid(type) {
         //if type is undefined, clear all nodes
         if (typeof type == "undefined") {
@@ -155,22 +326,22 @@ var canvas, buffer, context, drawGrid, developerMode;
 
     function placeStartNode() {
         createStartNode = true;
-        document.addEventListener("mousemove", drawGrid);
+        document.addEventListener("mousemove", updateLastCellHovered);
     }
 
     function stopPlaceStartNode() {
         createStartNode = false;
-        document.removeEventListener("movemouse", drawGrid);
+        document.removeEventListener("mousemove", updateLastCellHovered);
     }
 
     function placeEndNode() {
         createEndNode = true;
-        document.addEventListener("mousemove", drawGrid);
+        document.addEventListener("mousemove", updateLastCellHovered);
     }
 
     function stopPlaceEndNode() {
         createEndNode = false;
-        document.removeEventListener("mousemove", drawGrid);
+        document.removeEventListener("mousemove", updateLastCellHovered);
     }
 
     function toggleEraser() {
@@ -184,119 +355,4 @@ var canvas, buffer, context, drawGrid, developerMode;
         drawGrid();
     }
 
-    //just keeps the canvas element sized appropriately
-    resize = function (event) {
-        context.canvas.width = Math.floor(
-            document.documentElement.clientWidth - size
-        );
-
-        if (context.canvas.width > document.documentElement.clientHeight) {
-            context.canvas.width = Math.floor(
-                document.documentElement.clientHeight
-            );
-        }
-
-        context.canvas.height = Math.floor(
-            context.canvas.width * (ROWS / COLS)
-        );
-
-        drawGrid();
-    };
-
-    window.addEventListener("resize", resize, { passive: true });
-
-    resize();
-
-    function getGridPos(x, y) {
-        var width = canvas.width;
-        var height = canvas.height;
-        var coordinate = [];
-        coordinate.push(Math.floor(x / (width / COLS)));
-        coordinate.push(Math.floor(y / (height / ROWS)));
-        return coordinate;
-    }
-
-    function placeNode() {
-        var pos = getCursorPos();
-        var gridPos = getGridPos(pos[0], pos[1]);
-
-        //clear the last start node and place new start node
-        if (createStartNode) {
-            clearGrid("start");
-            GRID[gridPos[0]][gridPos[1]].setStart(true);
-            GRID[gridPos[0]][gridPos[1]].setWall(false);
-            START_NODE = GRID[gridPos[0]][gridPos[1]];
-        }
-
-        //place end
-        if (createEndNode) {
-            clearGrid("end");
-            GRID[gridPos[0]][gridPos[1]].setEnd(true);
-            GRID[gridPos[0]][gridPos[1]].setWall(false);
-            END_NODE = GRID[gridPos[0]][gridPos[1]];
-        }
-
-        //place wall
-
-        //don't allow user to make walls to overwrite the start and end nodes
-        if (
-            GRID[gridPos[0]][gridPos[1]].isStart() == false &&
-            GRID[gridPos[0]][gridPos[1]].isEnd() == false
-        )
-            GRID[gridPos[0]][gridPos[1]].setWall(eraser ? false : true);
-
-        drawGrid();
-    }
-
-    document
-        .getElementById("placeStartNode")
-        .addEventListener("click", function (event) {
-            placeStartNode();
-        });
-
-    document
-        .getElementById("placeEndNode")
-        .addEventListener("click", function (event) {
-            placeEndNode();
-        });
-
-    document
-        .getElementById("clearGrid")
-        .addEventListener("click", function (event) {
-            clearGrid();
-        });
-
-    document
-        .getElementById("toggleEraser")
-        .addEventListener("click", function (event) {
-            toggleEraser();
-        });
-
-    document
-        .getElementById("toggleDeveloperMode")
-        .addEventListener("click", function (event) {
-            toggleDeveloperMode();
-        });
-
-    window.addEventListener("mousedown", function (event) {
-        if (cursorInCanvas()) {
-            //draw when you click
-            placeNode();
-            //also draw when you drag while mouse is pressed
-            document.addEventListener("mousemove", placeNode);
-
-            if (createStartNode) {
-                stopPlaceStartNode();
-            }
-
-            if (createEndNode) {
-                stopPlaceEndNode();
-            }
-        }
-    });
-
-    window.addEventListener("mouseup", function (event) {
-        //when not pressing down mouse button anymore, stop drawing
-        document.removeEventListener("mousemove", placeNode);
-    });
 })();
