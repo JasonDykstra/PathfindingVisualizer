@@ -83,9 +83,33 @@
 
 
 //testing timeout stuff
-// console.log("start...");
-// setTimeout(myTestFunctionLog(), 6000);
+function myTestFunctionLog(){
+    window.alert("hello!");
+}
 
-// function myTestFunctionLog(){
-//     console.log("hello!");
-// }
+// document.getElementById("timeout").addEventListener("click", function (event) {
+//     setTimeout(myTestFunctionLog, 2000);
+// });
+
+//takeaway: you MUST exclude the parenthesis from the fucntion call as the first arguent in setTimeout
+//or else it will execute immediately!
+
+//testing timeout passing in variables
+var testMessage = "hello world!";
+
+function testLogOutput(x){
+    console.log("Your test message is: " + x);
+}
+
+setTimeout(function(){
+    testLogOutput(testMessage);
+}, 2000);
+
+//worked!
+
+
+
+//testing fill and stroke styles for canvas elements
+//buffer.fillStyle = "#ff00ff";
+//buffer.rect(100, 100, 100, 100);
+//buffer.fill();

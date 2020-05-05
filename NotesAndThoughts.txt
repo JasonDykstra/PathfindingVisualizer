@@ -10,3 +10,11 @@ What I want to make:
 - Web-based visualizer (for easy accessibility)
 - No space between tiles (no annoying misclicks possible)
 - Stop drawing when you release mouse OR your cursor exits the draw area to prevent drawing when you don't want to be drawing
+
+
+Problems/Solutions
+- Animation/setTimeout not working properly
+    - Solution: Had to reset the "isVisited" values of all the nodes since the dijkstra algorithm set the visited parameter of visited nodes to true, so when the animation went to set them, they were already true, hence no animation, they appeared instantly.
+- Dijkstra's algorithm wouldn't work after clearing the grid
+    - Problem: the code I went off of from https://github.com/clementmihailescu/Pathfinding-Visualizer-Tutorial/blob/master/src/algorithms/dijkstra.js had "currentNode !== null" as the condition for the while loop in the "getNodesInShortestPathOrder" function, which caused my program to jump back and forth between two nodes indefinitely for some reason
+    - Solution: I changed that line to be "currentNode !== START_NODE" so that when the path reached the start node, it would terminate.

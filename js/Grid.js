@@ -2,15 +2,10 @@ var GRID;
 var START_NODE;
 var END_NODE;
 
-var canvas,
-        buffer,
-        context,
-        drawGrid;
+var canvas, buffer, context, drawGrid, developerMode;
 
 (function () {
-
     var size, createStartNode, createEndNode, eraser, nodeColors;
-    
 
     buffer = document.createElement("canvas").getContext("2d");
     context = document.querySelector("canvas").getContext("2d");
@@ -30,10 +25,11 @@ var canvas,
 
     createStartNode = false;
     createEndNode = false;
+    developerMode = false;
 
     //change these to alter the size of the grid
-    const ROWS = 9;
-    const COLS = 16;
+    const ROWS = 10;
+    const COLS = 20;
 
     //initialize the grid of empty nodes
     for (let i = 0; i < COLS; ++i) {
@@ -75,9 +71,9 @@ var canvas,
     drawGrid = function () {
         for (let i = 0; i < GRID.length; ++i) {
             for (let j = 0; j < GRID[0].length; ++j) {
+                
+                //set the draw variables
                 let node = GRID[i][j];
-
-                //var node = grid[0][0];
                 var fillStyle = nodeColors["empty"];
                 if (node.isWall()) fillStyle = nodeColors["wall"];
                 if (node.isVisited()) fillStyle = nodeColors["visited"];
@@ -85,16 +81,27 @@ var canvas,
                 if (node.isStart()) fillStyle = nodeColors["start"];
                 if (node.isEnd()) fillStyle = nodeColors["end"];
 
+                //draw the nodes
                 buffer.fillStyle = fillStyle;
                 buffer.fillRect(i * size, j * size, size, size);
+                buffer.strokeStyle = "#bbbbbb";
+                buffer.strokeRect(i * size, j * size, size, size);
 
-                buffer.fillStyle = "#ffffff";
-                buffer.font = "10px Arial";
+                //draw additional features if in developer mode
+                if (developerMode) {
+                    //text displaying distances on nodes
+                    buffer.fillStyle = "#ffffff";
+                    buffer.font = "10px Arial";
 
-                var width = canvas.width;
-                var height = canvas.height;
-                buffer.fillText(node.getDistance(), node.getX() * 32 + 10, node.getY() * 32 + 20);
-                //console.log("drawing text at " + node.getX()*(width/COLS) + ", " + node.getY()*(height/ROWS));
+                    var width = canvas.width;
+                    var height = canvas.height;
+                    buffer.fillText(
+                        node.getDistance(),
+                        node.getX() * 32 + 10,
+                        node.getY() * 32 + 20
+                    );
+                    //TODO change the values above to center the text instead of hardcoding it
+                }
             }
         }
 
@@ -103,7 +110,7 @@ var canvas,
             console.log("Hovering green!");
             var pos = getCursorPos;
             var gridPos = getGridPos(pos[0], pos[1]);
-            buffer.fillStyle = "#00ff00";
+            buffer.fillStyle = nodeColors["start"];
             buffer.fillRect(gridPos[0] * size, gridPos[1] * size, size, size);
         }
 
@@ -122,7 +129,7 @@ var canvas,
 
     function clearGrid(type) {
         //if type is undefined, clear all nodes
-        if(typeof(type) == "undefined"){
+        if (typeof type == "undefined") {
             for (let i = 0; i < GRID.length; ++i) {
                 for (let j = 0; j < GRID[0].length; ++j) {
                     GRID[i][j].setStart(false);
@@ -130,6 +137,7 @@ var canvas,
                     GRID[i][j].setWall(false);
                     GRID[i][j].setVisited(false);
                     GRID[i][j].setShortestPath(false);
+                    GRID[i][j].setDistance(Infinity);
                 }
             }
             //if type is defined, clear a specific type of node
@@ -140,7 +148,6 @@ var canvas,
                     if (type == "end") GRID[i][j].setEnd(false);
                 }
             }
-            
         }
 
         drawGrid();
@@ -154,22 +161,27 @@ var canvas,
     function stopPlaceStartNode() {
         createStartNode = false;
         document.removeEventListener("movemouse", drawGrid);
-        
     }
 
-    function placeEndNode(){
+    function placeEndNode() {
         createEndNode = true;
         document.addEventListener("mousemove", drawGrid);
     }
 
-    function stopPlaceEndNode(){
+    function stopPlaceEndNode() {
         createEndNode = false;
         document.removeEventListener("mousemove", drawGrid);
     }
 
-    function toggleEraser(){
+    function toggleEraser() {
         eraser = !eraser;
-        document.getElementById("toggleEraser").innerHTML = "Push to turn " + (eraser ? "off" : "on") + " eraser";
+        document.getElementById("toggleEraser").innerHTML =
+            "Push to turn " + (eraser ? "off" : "on") + " eraser";
+    }
+
+    function toggleDeveloperMode() {
+        developerMode = !developerMode;
+        drawGrid();
     }
 
     //just keeps the canvas element sized appropriately
@@ -232,27 +244,39 @@ var canvas,
             GRID[gridPos[0]][gridPos[1]].isEnd() == false
         )
             GRID[gridPos[0]][gridPos[1]].setWall(eraser ? false : true);
-        
+
         drawGrid();
     }
 
-    document.getElementById("placeStartNode").addEventListener("click", function (event) {
-        placeStartNode();
-    });
+    document
+        .getElementById("placeStartNode")
+        .addEventListener("click", function (event) {
+            placeStartNode();
+        });
 
-    document.getElementById("placeEndNode").addEventListener("click", function (event) {
-        placeEndNode();
-    });
+    document
+        .getElementById("placeEndNode")
+        .addEventListener("click", function (event) {
+            placeEndNode();
+        });
 
-    document.getElementById("clearGrid").addEventListener("click", function (event) {
-        clearGrid();
-    });
+    document
+        .getElementById("clearGrid")
+        .addEventListener("click", function (event) {
+            clearGrid();
+        });
 
-    document.getElementById("toggleEraser").addEventListener("click", function (event){
-        toggleEraser();
-    });
+    document
+        .getElementById("toggleEraser")
+        .addEventListener("click", function (event) {
+            toggleEraser();
+        });
 
-
+    document
+        .getElementById("toggleDeveloperMode")
+        .addEventListener("click", function (event) {
+            toggleDeveloperMode();
+        });
 
     window.addEventListener("mousedown", function (event) {
         if (cursorInCanvas()) {
@@ -265,7 +289,7 @@ var canvas,
                 stopPlaceStartNode();
             }
 
-            if(createEndNode){
+            if (createEndNode) {
                 stopPlaceEndNode();
             }
         }

@@ -1,5 +1,8 @@
+/*
+Modification of code from https://github.com/clementmihailescu/Pathfinding-Visualizer-Tutorial/blob/master/src/algorithms/dijkstra.js
+*/
+
 //returns a list of visited nodes in order
-var dijkstraCounter = 0;
 function dijkstra(grid, startNode, endNode) {
     const visitedNodesInOrder = [];
     startNode.distance = 0;
@@ -35,7 +38,6 @@ function updateUnvisitedNeighbors(node, grid) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
     for (const neighbor of unvisitedNeighbors) {
         neighbor.setDistance(node.getDistance() + 1);
-        console.log("distance for node (" + neighbor.getX() + ", " + neighbor.getY() + ") is " + neighbor.getDistance());
         neighbor.setPreviousNode(node);
     }
 }
@@ -77,9 +79,15 @@ function getAllNodes(grid) {
 //backtracks from the end node to find the shortest path
 //only work when called after the dijkstra method above
 function getNodesInShortestPathOrder(endNode) {
+    console.log("Getting nodes in shortest path...");
+    console.log("Type of end node passed into shortestPathOrder function is: " + typeof(endNode));
+    console.log("Type of previous node: " + typeof(endNode.getPreviousNode()));
+    console.log("Coordinates of previous node: " + endNode.getPreviousNode().getX() + ", " + endNode.getPreviousNode().getY());
     const nodesInShortestPathOrder = [];
     let currentNode = endNode;
-    while (typeof currentNode !== "undefined") {
+    //while (typeof(currentNode) !== "undefined") {
+    while(currentNode !== START_NODE){
+        console.log("Adding node " + currentNode.getX() + ", " + currentNode.getY() + " to list");
         nodesInShortestPathOrder.unshift(currentNode);
         currentNode = currentNode.getPreviousNode();
     }
