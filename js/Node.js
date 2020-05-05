@@ -6,7 +6,13 @@ class Node{
         this.gCost = 0;
         this.hCost = 0;
         this.fCost = 0;
+        this.previousNode;
         this.parent;
+        this.start = false;
+        this.end = false;
+        this.wall = false;
+        this.visited = false;
+        this.distance = Infinity;
     }
 
     getX(){
@@ -29,8 +35,32 @@ class Node{
         return this.fCost;
     }
 
+    getPreviousNode(){
+        return this.previousNode;
+    }
+
     getParent(){
         return this.parent;
+    }
+
+    isStart(){
+        return this.start;
+    }
+
+    isEnd(){
+        return this.end
+    }
+
+    isWall(){
+        return this.wall;
+    }
+
+    isVisited(){
+        return this.visited;
+    }
+
+    getDistance(){
+        return this.distance;
     }
 
     setXY(x, y){
@@ -50,11 +80,33 @@ class Node{
         this.fCost = fCost;
     }
 
+    setPreviousNode(previousNode){
+        this.previousNode = previousNode;
+    }
+
     setParent(parent){
         this.parent = parent;
     }
 
+    setStart(start){
+        this.start = start;
+    }
+
+    setEnd(end){
+        this.end = end;
+    }
+
+    setWall(wall){
+        this.wall = wall;
+    }
+
+    setVisited(visited){
+        this.visited = visited;
+    }
     
+    setDistance(distance){
+        this.distance = distance;
+    }
 }
 
 function NodeisEqual(start, end){

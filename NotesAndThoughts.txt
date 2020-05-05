@@ -1,0 +1,12 @@
+stuff about other pathfinding visualizers I dont like:
+- Web-based visualizers:
+    - Spaces between divs allow for you to click between the divs and then dragging no longer creates obstacles. Annoying glitch.
+    - On all visualizers I found, if you click and hold to draw obstacles, move cursor out of div field, release mouse, then drag mouse back into div field, you are still drawing even though your mouse button is released.
+
+- Visualizers made in java:
+    - Not easily accessible from any computer, since you have to download the jar file to run it.
+
+What I want to make:
+- Web-based visualizer (for easy accessibility)
+- No space between tiles (no annoying misclicks possible)
+- Stop drawing when you release mouse OR your cursor exits the draw area to prevent drawing when you don't want to be drawing

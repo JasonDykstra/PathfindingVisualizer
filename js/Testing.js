@@ -1,5 +1,8 @@
 node = new Node(3, 3);
 node2 = new Node(3, 3);
+node.setStart(true);
+var testingIsStart = node.isStart();
+console.log(testingIsStart);
 
 var equal = NodeisEqual(node, node2);
 //document.getElementById("TestDiv").innerHTML = equal;
@@ -66,3 +69,14 @@ var endNode = new Node(0, 5);
 var pathfinding = new AStar(size, startNode, endNode);
 pathfinding.setDiagonal(true);
 pathfinding.start(startNode, endNode);
+
+
+//testing modification of variables passed into functions (copy vs reference)
+function testModifyVariable(x){
+    x = 3;
+}
+
+var testVariableToModify = 5;
+testModifyVariable(testVariableToModify);
+console.log("Original was 5, variable is now: " + testVariableToModify);
+//takeaway: printed 5 so it makes a copy of the variable, doesn't use reference
