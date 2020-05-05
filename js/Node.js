@@ -13,6 +13,7 @@ class Node{
         this.wall = false;
         this.visited = false;
         this.distance = Infinity;
+        this.shortestPath = false;
     }
 
     getX(){
@@ -57,6 +58,10 @@ class Node{
 
     isVisited(){
         return this.visited;
+    }
+
+    isShortestPath(){
+        return this.shortestPath;
     }
 
     getDistance(){
@@ -106,6 +111,10 @@ class Node{
     
     setDistance(distance){
         this.distance = distance;
+    }
+
+    setShortestPath(shortestPath){
+        this.shortestPath = shortestPath;
     }
 }
 

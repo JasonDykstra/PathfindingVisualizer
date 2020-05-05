@@ -1,20 +1,22 @@
-(function () {
-    var canvas,
+var GRID;
+var START_NODE;
+var END_NODE;
+
+var canvas,
         buffer,
         context,
-        drawGrid,
-        grid,
-        size,
-        createStartNode,
-        createEndNode,
-        eraser,
-        nodeColors;
+        drawGrid;
+
+(function () {
+
+    var size, createStartNode, createEndNode, eraser, nodeColors;
+    
 
     buffer = document.createElement("canvas").getContext("2d");
     context = document.querySelector("canvas").getContext("2d");
     canvas = document.querySelector("canvas");
 
-    grid = [];
+    GRID = [];
 
     eraser = false;
 
@@ -23,6 +25,8 @@
     nodeColors["start"] = "#00ff00";
     nodeColors["end"] = "#ff0000";
     nodeColors["wall"] = "#000000";
+    nodeColors["visited"] = "#0000ff";
+    nodeColors["shortestPath"] = "#00ffff";
 
     createStartNode = false;
     createEndNode = false;
@@ -38,7 +42,7 @@
             var tempNode = new Node(i, j);
             row.push(tempNode);
         }
-        grid.push(row);
+        GRID.push(row);
     }
 
     size = 32;
@@ -69,18 +73,28 @@
     }
 
     drawGrid = function () {
-        for (let i = 0; i < grid.length; ++i) {
-            for (let j = 0; j < grid[0].length; ++j) {
-                let node = grid[i][j];
+        for (let i = 0; i < GRID.length; ++i) {
+            for (let j = 0; j < GRID[0].length; ++j) {
+                let node = GRID[i][j];
 
                 //var node = grid[0][0];
                 var fillStyle = nodeColors["empty"];
+                if (node.isWall()) fillStyle = nodeColors["wall"];
+                if (node.isVisited()) fillStyle = nodeColors["visited"];
+                if (node.isShortestPath()) fillStyle = nodeColors["shortestPath"];
                 if (node.isStart()) fillStyle = nodeColors["start"];
                 if (node.isEnd()) fillStyle = nodeColors["end"];
-                if (node.isWall()) fillStyle = nodeColors["wall"];
 
                 buffer.fillStyle = fillStyle;
                 buffer.fillRect(i * size, j * size, size, size);
+
+                buffer.fillStyle = "#ffffff";
+                buffer.font = "10px Arial";
+
+                var width = canvas.width;
+                var height = canvas.height;
+                buffer.fillText(node.getDistance(), node.getX() * 32 + 10, node.getY() * 32 + 20);
+                //console.log("drawing text at " + node.getX()*(width/COLS) + ", " + node.getY()*(height/ROWS));
             }
         }
 
@@ -107,25 +121,23 @@
     };
 
     function clearGrid(type) {
-        console.log("clear grid called, type = " + typeof(type));
-        
         //if type is undefined, clear all nodes
         if(typeof(type) == "undefined"){
-            console.log("clear grid subsection called");
-            for (let i = 0; i < grid.length; ++i) {
-                for (let j = 0; j < grid[0].length; ++j) {
-                    grid[i][j].setStart(false);
-                    grid[i][j].setEnd(false);
-                    grid[i][j].setWall(false);
+            for (let i = 0; i < GRID.length; ++i) {
+                for (let j = 0; j < GRID[0].length; ++j) {
+                    GRID[i][j].setStart(false);
+                    GRID[i][j].setEnd(false);
+                    GRID[i][j].setWall(false);
+                    GRID[i][j].setVisited(false);
+                    GRID[i][j].setShortestPath(false);
                 }
             }
             //if type is defined, clear a specific type of node
         } else {
-            console.log("type not undefined...");
-            for (let i = 0; i < grid.length; ++i) {
-                for (let j = 0; j < grid[0].length; ++j) {
-                    if (type == "start") grid[i][j].setStart(false);
-                    if (type == "end") grid[i][j].setEnd(false);
+            for (let i = 0; i < GRID.length; ++i) {
+                for (let j = 0; j < GRID[0].length; ++j) {
+                    if (type == "start") GRID[i][j].setStart(false);
+                    if (type == "end") GRID[i][j].setEnd(false);
                 }
             }
             
@@ -199,25 +211,27 @@
         //clear the last start node and place new start node
         if (createStartNode) {
             clearGrid("start");
-            grid[gridPos[0]][gridPos[1]].setStart(true);
-            grid[gridPos[0]][gridPos[1]].setWall(false);
+            GRID[gridPos[0]][gridPos[1]].setStart(true);
+            GRID[gridPos[0]][gridPos[1]].setWall(false);
+            START_NODE = GRID[gridPos[0]][gridPos[1]];
         }
 
         //place end
         if (createEndNode) {
             clearGrid("end");
-            grid[gridPos[0]][gridPos[1]].setEnd(true);
-            grid[gridPos[0]][gridPos[1]].setWall(false);
+            GRID[gridPos[0]][gridPos[1]].setEnd(true);
+            GRID[gridPos[0]][gridPos[1]].setWall(false);
+            END_NODE = GRID[gridPos[0]][gridPos[1]];
         }
 
         //place wall
 
         //don't allow user to make walls to overwrite the start and end nodes
         if (
-            grid[gridPos[0]][gridPos[1]].isStart() == false &&
-            grid[gridPos[0]][gridPos[1]].isEnd() == false
+            GRID[gridPos[0]][gridPos[1]].isStart() == false &&
+            GRID[gridPos[0]][gridPos[1]].isEnd() == false
         )
-            grid[gridPos[0]][gridPos[1]].setWall(eraser ? false : true);
+            GRID[gridPos[0]][gridPos[1]].setWall(eraser ? false : true);
         
         drawGrid();
     }
