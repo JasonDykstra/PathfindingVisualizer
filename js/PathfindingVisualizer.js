@@ -15,3 +15,14 @@ function resetNodes() {
         }
     }
 }
+
+function setState(state){
+    STATE = state;
+
+    //grey out buttons to show they are unusable while visualiztion is happening
+    if(state == "visualize"){
+        changeButtonBackgrounds("#666666");
+    } else if(state == "draw"){
+        changeButtonBackgrounds("green");
+    }
+}

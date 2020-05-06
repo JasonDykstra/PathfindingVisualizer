@@ -18,22 +18,35 @@ window.onclick = function (event) {
     }
 }
 
+//change background color of buttons for certain states
+function changeButtonBackgrounds(backgroundColor){
+    var buttons = document.querySelectorAll("button");
+    console.log("list of buttons: " + buttons);
+
+    for(let i = 0; i < buttons.length; ++i){
+        //don't change the toggle developer mode button
+        if(buttons[i].id != "toggleDeveloperMode") buttons[i].style.backgroundColor = backgroundColor;
+    }
+}
+
 //Event Listeners
 
 //buttons
 document.getElementById("placeStartNode").addEventListener("click", function (event) {
-    if(STATE == "draw")
+    if (STATE == "draw")
         placeStartNode();
 });
 
 document.getElementById("placeEndNode").addEventListener("click", function (event) {
-    if(STATE == "draw")
+    if (STATE == "draw")
         placeEndNode();
 });
 
 //event listener for "find path" button
 document.getElementById("findPath").addEventListener("click", function (event) {
-    STATE = "visualize";
-    console.log("finding path...");
-    visualize();
+    if (STATE == "finished" || STATE == "draw") {
+        setState("visualize");
+        console.log("finding path...");
+        visualize();
+    }
 });

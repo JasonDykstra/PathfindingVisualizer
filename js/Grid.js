@@ -3,9 +3,10 @@
     var size, createStartNode, createEndNode, eraser, nodeColors, lastCellHovered, mouseOverCanvas;
 
     //define canvas elements
+    //use a buffer here to "queue" all drawings on a separate canvas, then draw them to the canvas on screen
+    //this prevents anti-aliasing issues, as well as easier dynamic resizing
     buffer = document.createElement("canvas").getContext("2d");
     context = document.querySelector("canvas").getContext("2d");
-    canvas = document.querySelector("canvas");
 
     //define other elements
     GRID = [];
@@ -35,6 +36,9 @@
         buffer.canvas.height = ROWS * size;
         buffer.strokeStyle = "#bbbbbb";
 
+        context.canvas.width = '100%';
+        context.canvas.height = '100%';
+
         nodeColors["empty"] = "#ffffff";
         nodeColors["start"] = "#00ff00";
         nodeColors["end"] = "#ff0000";
@@ -44,7 +48,7 @@
 
         lastCellHovered = [0, 0];
 
-        STATE = "draw";
+        setState("draw");
         console.log("initialization complete...");
     }
 
@@ -56,7 +60,7 @@
     //returns absolute position of cursor
     function getCursorPos() {
         var pos = [];
-        const rect = canvas.getBoundingClientRect();
+        const rect = context.canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         pos.push(x);
@@ -80,7 +84,7 @@
     function updateLastCellHovered() {
         var pos = getCursorPos();
         var gridPos = getGridPos(pos[0], pos[1]);
-        
+
         //could use the mouseOverCanvas variable, but this works more consistently
         if (posInCanvas(gridPos)) {
 
@@ -151,7 +155,7 @@
                 drawCell(fillStyle, row, col);
 
                 //draw additional features if in developer mode
-                if (developerMode) {
+                if (developerMode && getNodeType(node) != "empty") {
                     //text displaying distances on nodes
                     buffer.fillStyle = "#ffffff";
                     buffer.font = "10px Arial";
@@ -160,8 +164,6 @@
                     buffer.textAlign = "center";
                     buffer.textBaseLine = "middle";
 
-                    var width = canvas.width;
-                    var height = canvas.height;
                     buffer.fillText(
                         node.getDistance(),
                         node.getCol() * size + size / 2,
@@ -181,9 +183,10 @@
             document.documentElement.clientWidth - size
         );
 
-        if (context.canvas.width > document.documentElement.clientHeight) {
+        if (context.canvas.width > document.documentElement.clientWidth) {
+            console.log("canvas width greater than height");
             context.canvas.width = Math.floor(
-                document.documentElement.clientHeight
+                document.documentElement.clientWidth
             );
         }
 
@@ -200,8 +203,8 @@
     //IMPORTANT does not return (x, y) coordinates of a node, but rather (row, col), so flipped
     //this is due to the way the 2d array works, and that the first parameter is row and second is col
     function getGridPos(x, y) {
-        var width = canvas.width;
-        var height = canvas.height;
+        var width = context.canvas.width;
+        var height = context.canvas.height;
         var coordinate = [];
         coordinate.push(Math.floor(y / (height / ROWS)));
         coordinate.push(Math.floor(x / (width / COLS)));
@@ -209,38 +212,40 @@
     }
 
     function placeNode() {
-        if (STATE == "draw") {
-            var pos = getCursorPos();
-            var gridPos = getGridPos(pos[0], pos[1]);
-            var row = gridPos[0];
-            var col = gridPos[1];
+        if (mouseOverCanvas) {
+            if (STATE == "draw") {
+                var pos = getCursorPos();
+                var gridPos = getGridPos(pos[0], pos[1]);
+                var row = gridPos[0];
+                var col = gridPos[1];
 
-            //clear the last start node and place new start node
-            if (createStartNode) {
-                clearGrid("start");
-                GRID[row][col].setStart(true);
-                GRID[row][col].setWall(false);
-                START_NODE = GRID[row][col];
+                //clear the last start node and place new start node
+                if (createStartNode) {
+                    clearGrid("start");
+                    GRID[row][col].setStart(true);
+                    GRID[row][col].setWall(false);
+                    START_NODE = GRID[row][col];
+                }
+
+                //place end
+                if (createEndNode) {
+                    clearGrid("end");
+                    GRID[row][col].setEnd(true);
+                    GRID[row][col].setWall(false);
+                    END_NODE = GRID[row][col];
+                }
+
+                //place wall
+
+                //don't allow user to make walls to overwrite the start and end nodes
+                if (
+                    GRID[row][col].isStart() == false &&
+                    GRID[row][col].isEnd() == false
+                )
+                    GRID[row][col].setWall(eraser ? false : true);
+
+                drawGrid();
             }
-
-            //place end
-            if (createEndNode) {
-                clearGrid("end");
-                GRID[row][col].setEnd(true);
-                GRID[row][col].setWall(false);
-                END_NODE = GRID[row][col];
-            }
-
-            //place wall
-
-            //don't allow user to make walls to overwrite the start and end nodes
-            if (
-                GRID[row][col].isStart() == false &&
-                GRID[row][col].isEnd() == false
-            )
-                GRID[row][col].setWall(eraser ? false : true);
-
-            drawGrid();
         }
     }
 
@@ -253,7 +258,7 @@
     window.addEventListener("mousedown", function (event) {
         console.log(STATE);
         //if (cursorInCanvas()) {
-        if(mouseOverCanvas){
+        if (mouseOverCanvas) {
             //draw when you click
             placeNode();
             //also draw when you drag while mouse is pressed
@@ -275,7 +280,7 @@
     });
 
     document.getElementById("clearGrid").addEventListener("click", function (event) {
-        if(STATE == "draw" || STATE == "finished")
+        if (STATE == "draw" || STATE == "finished")
             clearGrid();
     });
 
@@ -287,11 +292,11 @@
         toggleDeveloperMode();
     });
 
-    canvas.onmouseover = function(){
+    context.canvas.onmouseover = function () {
         mouseOverCanvas = true;
     }
 
-    canvas.onmouseout = function(){
+    context.canvas.onmouseout = function () {
         mouseOverCanvas = false;
     }
 
@@ -320,7 +325,7 @@
             }
         }
 
-        STATE = "draw";
+        setState("draw");
         drawGrid();
     }
 

@@ -20,7 +20,6 @@ finish: finished visualizing algorithm and can clear canvas
 */
 var STATE;
 
-
 //change this to edit the speed at which animations play
 const ANIMATION_DELAY = 15;
 
