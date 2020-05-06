@@ -5,28 +5,64 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="stylesheets/Main.css">
+
 </head>
 
-<body onload="">
-    <!-- Main canvas element -->
-    <div id="canvas">
-        <canvas></canvas>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <!-- Buttons -->
+            <ul>
+                <!-- <li class="dropdown">
+                    <button onclick="toggleDropdown()" class="dropButton">Test Dropdown</button>
+                    <div id="algorithmsDropdown" class="dropdown-content">
+                        <a href="#">TEST1</a>
+                        <a href="#">TEST2</a>
+                        <a href="#">TEST3</a>
+                    </div>
+                </li> -->
+                <li><button id="placeStartNode">Create start node</button></li>
+                <li><button id="placeEndNode">Create end node</button></li>
+                <li><button id="toggleEraser">Push to turn on eraser</button></li>
+                <li><button id="clearGrid">Push to clear grid</button></li>
+                <li><button id="findPath">Push to find path</button></li>
+                <li><button id="toggleDeveloperMode">Push to toggle developer mode</button></li>
+                <li><ul class="dropdown-menu">
+                    <li></li>
+                </ul></li>
+            </ul>
+            
+            
+            
+            
+            
+            
+
+        </div>
+
+        <!-- Main canvas element -->
+        <div class="canvas">
+            <canvas></canvas>
+        </div>
+
     </div>
 
-    <!-- Buttons -->
-    <button id="placeStartNode">Push to create start node</button>
-    <button id="placeEndNode">Push to create end node</button>
-    <button id="toggleEraser">Push to turn on eraser</button>
-    <button id="clearGrid">Push to clear grid</button>
-    <button id="findPath">Push to find path</button>
-    <button id="toggleDeveloperMode">Push to toggle developer mode</button>
 
     <!------------------ Scripts ------------------>
     <script src="js/GlobalVariables.js"></script>
 
+    <!-- CSS Elements -->
+    <script src="js/CssElements.js"></script>
+
     <!-- Algorithms -->
     <script src="js/AStar.js"></script>
     <script src="js/Algorithms/Dijkstra.js"></script>
+
+    <!-- Algorithm Visualizers -->
+    <script src="js/AlgorithmVisualizations/DijkstraVisualization.js"></script>
 
     <script src="js/ArrayList.js"></script>
     <script src="js/Node.js"></script>

@@ -1,6 +1,6 @@
 (function () {
     //local variables for drawing
-    var size, createStartNode, createEndNode, eraser, nodeColors, lastCellHovered;
+    var size, createStartNode, createEndNode, eraser, nodeColors, lastCellHovered, mouseOverCanvas;
 
     //define canvas elements
     buffer = document.createElement("canvas").getContext("2d");
@@ -29,6 +29,8 @@
 
         size = 32;
 
+        mouseOverCanvas = false;
+
         buffer.canvas.width = COLS * size;
         buffer.canvas.height = ROWS * size;
         buffer.strokeStyle = "#bbbbbb";
@@ -41,11 +43,14 @@
         nodeColors["shortestPath"] = "#00ffff";
 
         lastCellHovered = [0, 0];
+
+        STATE = "draw";
+        console.log("initialization complete...");
     }
 
     initialize();
 
-    
+
     //functions
 
     //returns absolute position of cursor
@@ -59,23 +64,10 @@
         return pos;
     }
 
-    //returns a boolean of whether or not the cursor is in the canvas
-    function cursorInCanvas() {
-        var pos = getCursorPos();
-        if (
-            pos[0] < 0 ||
-            pos[0] > canvas.width ||
-            pos[1] < 0 ||
-            pos[1] > canvas.height
-        )
-            return false;
-        return true;
-    }
-
     //even though I check to see if the cursor is in the canvas, there is still a frame where
     //it returns a cell outside of the canvas, so have to account for that using this function
-    function posInCanvas(gridPos){
-        if(
+    function posInCanvas(gridPos) {
+        if (
             gridPos[0] < 0 ||
             gridPos[0] >= GRID.length ||
             gridPos[1] < 0 ||
@@ -88,6 +80,8 @@
     function updateLastCellHovered() {
         var pos = getCursorPos();
         var gridPos = getGridPos(pos[0], pos[1]);
+        
+        //could use the mouseOverCanvas variable, but this works more consistently
         if (posInCanvas(gridPos)) {
 
             //if cursor moves to a different grid space
@@ -145,7 +139,7 @@
 
     //main draw function for canvas
     //currently has to be a variable and not a function for it to have global scope
-    drawGrid = function() {
+    drawGrid = function () {
         for (let row = 0; row < GRID.length; ++row) {
             for (let col = 0; col < GRID[0].length; ++col) {
 
@@ -170,8 +164,8 @@
                     var height = canvas.height;
                     buffer.fillText(
                         node.getDistance(),
-                        node.getCol() * size + size/2,
-                        node.getRow() * size + size/2
+                        node.getCol() * size + size / 2,
+                        node.getRow() * size + size / 2
                     );
                     //TODO change the values above to center the text instead of hardcoding it
                 }
@@ -182,7 +176,7 @@
     };
 
     //just keeps the canvas element sized appropriately
-    function resize(event){
+    function resize(event) {
         context.canvas.width = Math.floor(
             document.documentElement.clientWidth - size
         );
@@ -215,47 +209,51 @@
     }
 
     function placeNode() {
-        var pos = getCursorPos();
-        var gridPos = getGridPos(pos[0], pos[1]);
-        var row = gridPos[0];
-        var col = gridPos[1];
+        if (STATE == "draw") {
+            var pos = getCursorPos();
+            var gridPos = getGridPos(pos[0], pos[1]);
+            var row = gridPos[0];
+            var col = gridPos[1];
 
-        //clear the last start node and place new start node
-        if (createStartNode) {
-            clearGrid("start");
-            GRID[row][col].setStart(true);
-            GRID[row][col].setWall(false);
-            START_NODE = GRID[row][col];
+            //clear the last start node and place new start node
+            if (createStartNode) {
+                clearGrid("start");
+                GRID[row][col].setStart(true);
+                GRID[row][col].setWall(false);
+                START_NODE = GRID[row][col];
+            }
+
+            //place end
+            if (createEndNode) {
+                clearGrid("end");
+                GRID[row][col].setEnd(true);
+                GRID[row][col].setWall(false);
+                END_NODE = GRID[row][col];
+            }
+
+            //place wall
+
+            //don't allow user to make walls to overwrite the start and end nodes
+            if (
+                GRID[row][col].isStart() == false &&
+                GRID[row][col].isEnd() == false
+            )
+                GRID[row][col].setWall(eraser ? false : true);
+
+            drawGrid();
         }
-
-        //place end
-        if (createEndNode) {
-            clearGrid("end");
-            GRID[row][col].setEnd(true);
-            GRID[row][col].setWall(false);
-            END_NODE = GRID[row][col];
-        }
-
-        //place wall
-
-        //don't allow user to make walls to overwrite the start and end nodes
-        if (
-            GRID[row][col].isStart() == false &&
-            GRID[row][col].isEnd() == false
-        )
-            GRID[row][col].setWall(eraser ? false : true);
-
-        drawGrid();
     }
 
-    
+
 
     //event listeners
 
     window.addEventListener("resize", resize, { passive: true });
 
     window.addEventListener("mousedown", function (event) {
-        if (cursorInCanvas()) {
+        console.log(STATE);
+        //if (cursorInCanvas()) {
+        if(mouseOverCanvas){
             //draw when you click
             placeNode();
             //also draw when you drag while mouse is pressed
@@ -276,16 +274,9 @@
         document.removeEventListener("mousemove", placeNode);
     });
 
-    document.getElementById("placeStartNode").addEventListener("click", function (event) {
-        placeStartNode();
-    });
-
-    document.getElementById("placeEndNode").addEventListener("click", function (event) {
-        placeEndNode();
-    });
-
     document.getElementById("clearGrid").addEventListener("click", function (event) {
-        clearGrid();
+        if(STATE == "draw" || STATE == "finished")
+            clearGrid();
     });
 
     document.getElementById("toggleEraser").addEventListener("click", function (event) {
@@ -296,8 +287,16 @@
         toggleDeveloperMode();
     });
 
+    canvas.onmouseover = function(){
+        mouseOverCanvas = true;
+    }
+
+    canvas.onmouseout = function(){
+        mouseOverCanvas = false;
+    }
+
     //event listener functions
-    
+
     function clearGrid(type) {
         //if type is undefined, clear all nodes
         if (typeof type == "undefined") {
@@ -321,10 +320,11 @@
             }
         }
 
+        STATE = "draw";
         drawGrid();
     }
 
-    function placeStartNode() {
+    placeStartNode = function () {
         createStartNode = true;
         document.addEventListener("mousemove", updateLastCellHovered);
     }
@@ -334,7 +334,7 @@
         document.removeEventListener("mousemove", updateLastCellHovered);
     }
 
-    function placeEndNode() {
+    placeEndNode = function () {
         createEndNode = true;
         document.addEventListener("mousemove", updateLastCellHovered);
     }
