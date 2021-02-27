@@ -11,6 +11,6 @@ Besides the buttons at the top of the grid to create start and end nodes, you ca
 
 # Pictures
 
-![Pathfinding grid](pics/pathfindinggrid)
-![Path finding setup](pics/pathfindingsetup)
-![Path finding result](pics/pathfindingresult)
+![Pathfinding grid](pics/pathfindinggrid.png)
+![Path finding setup](pics/pathfindingsetup.png)
+![Path finding result](pics/pathfindingresult.png)
