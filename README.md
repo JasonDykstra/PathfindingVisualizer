@@ -7,3 +7,10 @@ The website is currently hosted on http://users.wpi.edu/~jpdykstra/ as of Nov 17
 ## Usage
 
 Besides the buttons at the top of the grid to create start and end nodes, you can click or drag on the grid to create barrier nodes, or obstacles. The pathfinding algorithm will treat these black squares as impassable walls. 
+
+
+# Pictures
+
+![Pathfinding grid](pics/pathfindinggrid)
+![Path finding setup](pics/pathfindingsetup)
+![Path finding result](pics/pathfindingresult)
